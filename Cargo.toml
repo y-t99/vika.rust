@@ -4,8 +4,9 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "rust for vika api."
-homepage = ""
-documentation = ""
+homepage = "https://github.com/y-t99/vika.rust"
+documentation = "https://github.com/y-t99/vika.rust"
+repository = "https://github.com/y-t99/vika.rust"
 readme = "README.md"
 
 [dependencies]
