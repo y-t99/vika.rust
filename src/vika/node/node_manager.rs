@@ -33,7 +33,7 @@ impl NodesManager {
         }
     }
 
-    pub fn node(self, node_id: String) -> Option<Node> {
+    pub fn node(self, node_id: &String) -> Option<Node> {
         let config: Config = self.config.clone();
         let url = format!(
             "{}://{}/fusion/{}/spaces/{}/nodes/{}",

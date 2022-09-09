@@ -4,7 +4,7 @@
 
 🦀 rust for vikadata api. To use this crate, it's good for you to understand some vikadata's concept. for example, space, node, datasheet, view, field, record and soon. You can go [here](https://vika.cn/help/manual-1-what-is-vikadata/), it's vika office produce manual.
 
-[vikadata](https://github.com/vikadata) is a Commercial version of Open Source [APITable](https://github.com/apitable) which added full enterprise-ready features. Vikadata is the on-line visual database. **It means that we can save structured data to vikadata by vikadata api , when we want to make some interesting and fun tools. Instead of using heavy database**
+[vikadata](https://github.com/vikadata) is a Commercial version of Open Source [APITable](https://github.com/apitable) which added full enterprise-ready features. Vikadata is the on-line visual database. **It means that we can save structured data to vikadata by [vikadata api](https://vika.cn/developers/api/introduction) , when we want to make some interesting and fun tools. Instead of using heavy database**
 
 #### 🚀 Using
 
@@ -23,7 +23,7 @@ use vika_community::*;
 let vika_client: VIKAClient= VIKAClient::new("your_token".to_string());
 ```
 
-🪐 Query your all spaces:
+🪐 Querying your all spaces.
 
 ```rust
 let spaces: Vec<Space> = vika_client.spaces.query_all().unwrap();
@@ -40,11 +40,11 @@ for space in spaces {
 ```rust
 let space_id = "spcXxx".to_string();
 let node_id = "nodXxx".to_string();
+// the space's all nodes
 let nodes: Vec<Node> = vika_client
         .spaces.space(space_id)
         .nodes.query_all()
         .unwrap();
-// the space's all nodes
 for node in nodes {
     println!(
         "the node info[id: {}, name: {}, type: {}, icon: {}, isFav: {}]. \nthe node's children is: {:?}",
