@@ -45,7 +45,7 @@ let space_id = "spcXxx".to_string();
 let node_id = "nodXxx".to_string();
 // the space's all nodes
 let nodes: Vec<Node> = vika_client
-        .spaces.space(space_id)
+        .spaces.space(&space_id)
         .nodes.query_all()
         .unwrap();
 for node in nodes {
@@ -56,8 +56,8 @@ for node in nodes {
 }
 // the specified node
 let node: Node = vika_client
-        .spaces.space(space_id)
-        .nodes.node(node_id)
+        .spaces.space(&space_id)
+        .nodes.node(&node_id)
         .unwrap();
 println!(
     "the node info: id: {}, name {}, type {}, icon {}, isFav {} \n. the node's children is: {:?}",
