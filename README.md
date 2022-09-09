@@ -13,8 +13,11 @@
 ```toml
 # Cargo.toml
 [dependencies]
-vika_community = { git = "https://github.com/y-t99/vika.rust.git" }
+vika_community = "0.1.1"
+# or
+# vika_community = { git = "https://github.com/y-t99/vika.rust.git" }
 ```
+
 🌠 Importing the crate, and create the `vika_client` by your vikadata's token.
 
 ```rust
