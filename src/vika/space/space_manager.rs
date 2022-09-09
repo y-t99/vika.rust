@@ -38,7 +38,7 @@ impl SpacesManager {
         }
     }
 
-    pub fn space(&self, space_id: String) -> SpaceManager {
+    pub fn space(&self, space_id: &String) -> SpaceManager {
         SpaceManager {
             _space_id: space_id.clone(),
             nodes: NodesManager {

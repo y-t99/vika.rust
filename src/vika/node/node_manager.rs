@@ -11,7 +11,7 @@ pub struct NodesManager {
 }
 
 impl NodesManager {
-    pub fn query_all(&self) -> Option<GetNodesResp> {
+    pub fn query_all(&self) -> Option<Vec<Node>> {
         let config: Config = self.config.clone();
         let url = format!(
             "{}://{}/fusion/{}/spaces/{}/nodes",
@@ -27,7 +27,7 @@ impl NodesManager {
             .unwrap();
         let resp: Response<GetNodesResp> = serde_json::from_str(&body).unwrap();
         if resp.code == 200 {
-            Some(resp.data)
+            Some(resp.data.nodes)
         } else {
             None
         }
