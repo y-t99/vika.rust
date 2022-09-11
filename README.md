@@ -66,7 +66,7 @@ println!(
 )
 ```
 
-🌈 the datasheet's field manager.
+🌈 The datasheet's field manager.
 
 ```rust
 use serde_json::Value;
@@ -99,11 +99,11 @@ for field_value in fields_value {
 fields.field_id(&new_field.id).delete();
 ```
 
-☄️ we can crete the datasheet.
+☄️ We can crete the datasheet.
 
 ```rust
 let space_id = "spaceXxx".to_string();
-let datasheet = vika_client.spaces.space(&space_id).datasheets;
+let datasheets = vika_client.spaces.space(&space_id).datasheets;
 let field_post_req = PostFieldReq::builder()
     .name("field_name".to_string())
     .as_single_text_req()
@@ -116,5 +116,75 @@ let datasheet_post_req: PostDatasheetReq = PostDatasheetReq::builder()
     .pre_node_id("dstXxx".to_string())
     .fields(vec![field_post_req])
     .build();
-let new_datasheet: PostDatasheetsResp = datasheet.post(datasheet_post_req).unwrap();
+let new_datasheet: PostDatasheetsResp = datasheets.post(datasheet_post_req).unwrap();
 ```
+
+✨ Query the datasheet's record.
+
+```rust
+let space_id = "spcXxx".to_string();
+let datasheet_id= "dstXxx".to_string();
+let records = vika_client
+    .spaces.space(&space_id)
+    .datasheets.datasheet(&datasheet_id)
+    .records;
+let records_req = GetRecordsReq::builder()
+    .page_size(1)
+    .max_records(1)
+    .page_num(1)
+    .field_key(FieldID::ID)
+    .sort(vec![
+        ("fldXxx".to_string(), Sort::DESC)
+    ])
+    .filter_by_formula("formula".to_string())
+    .build();
+let records_resp: GetRecordsResp = records.query(records_req).unwrap();
+println!(
+    "the records' page [current page number.: {}, the page's record size: {}, total number of records that met filter: {}]. \n records: [{:?}]",
+    records_resp.page_num, records_resp.page_size, records_resp.total, records_resp.records
+)
+```
+
+🛸 Managing the records.
+
+```rust
+// add records
+let filed_map = vec![
+    "fldXxx".to_string(),
+    "fldYyy".to_string(),
+    "fldZzz".to_string(),
+];
+let record = RecordMap::builder()
+    .put_string(&filed_map[0], "value".to_string())
+    .put_strings(&filed_map[1], vec!["value".to_string()])
+    .build();
+let post_records_req = PostRecordsReq::builder()
+    .field_key(FieldID::ID)
+    .records(vec![record])
+    .build();
+let post_records_resp: PostRecordsResp = records.post(post_records_req).unwrap();
+let record_id = post_records_resp.records[0].record_id.clone();
+// update records
+let record: RecordMap = RecordMap::builder()
+    .record_id(record_id.clone())
+    .put_string(&filed_map[2], "value".to_string())
+    .build();
+let patch_records_req: PatchRecordsReq = PatchRecordsReq::builder()
+    .field_key(FieldID::ID)
+    .records(vec![record])
+    .build();
+// delete records
+records.delete(vec![record_id.clone()]);
+```
+
+#### 🚚 Waiting & Expecting
+
+🛠️. more manager: view manager
+
+👣. better error reporting
+
+💪. more robust low-level code
+
+🛹. easier API
+
+🦀. more rust

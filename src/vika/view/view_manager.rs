@@ -35,7 +35,7 @@ impl ViewsManager {
         }
     }
 
-    pub fn view(&self, view_id: String) -> ViewManager {
+    pub fn view(&self, view_id: &String) -> ViewManager {
         ViewManager {
             config: self.config.clone(),
             space_id: self.space_id.clone(),

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 pub struct PostFieldReq {
-    pub field: Map<String, Value>,
+    field: Map<String, Value>,
 }
 
 impl PostFieldReq {

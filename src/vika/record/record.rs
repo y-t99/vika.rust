@@ -98,8 +98,15 @@ impl GetRecordsReqBuilder {
         self
     }
 
-    pub fn sort(mut self, sort: Vec<Sort>) -> GetRecordsReqBuilder {
-        self.field.insert(String::from("sort"), json!(sort));
+    pub fn sort(mut self, sort: Vec<(String, Sort)>) -> GetRecordsReqBuilder {
+        let mut sort_value: Vec<(String, String)> = Vec::new();
+        for s in sort {
+            match s.1 {
+                Sort::ASC => sort_value.push((s.0, "asc".to_string())),
+                Sort::DESC => sort_value.push((s.0, "desc".to_string())),
+            }
+        }
+        self.field.insert(String::from("sort"), json!(sort_value));
         self
     }
 
@@ -131,9 +138,15 @@ impl GetRecordsReqBuilder {
         self
     }
 
-    pub fn field_key(mut self, field_key: String) -> GetRecordsReqBuilder {
-        self.field
-            .insert(String::from("fieldKey"), json!(field_key));
+    pub fn field_key(mut self, field_key: FieldID) -> GetRecordsReqBuilder {
+        match field_key {
+            FieldID::ID => {
+                self.field.insert(String::from("fieldKey"), json!("id"));
+            }
+            FieldID::NAME => {
+                self.field.insert(String::from("fieldKey"), json!("name"));
+            }
+        }
         self
     }
 
@@ -142,20 +155,21 @@ impl GetRecordsReqBuilder {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct Sort(pub String, pub String);
-
 pub type PatchRecordsReq = PostRecordsReq;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct PostRecordsReq {
     #[serde(rename = "fieldKey")]
-    pub field_key: String,
+    field_key: String,
 
-    pub records: Vec<RecordMap>,
+    records: Vec<RecordMap>,
 }
 
 impl PostRecordsReq {
+    pub fn builder() -> PostRecordsReqBuilder {
+        PostRecordsReqBuilder::new()
+    }
+
     pub fn to_json_string(self) -> String {
         let mut value: Map<String, Value> = Map::new();
         value.insert("fieldKey".to_string(), Value::String(self.field_key));
@@ -167,6 +181,44 @@ impl PostRecordsReq {
         }
         value.insert("records".to_string(), Value::Array(record_values));
         serde_json::to_string(&value).unwrap()
+    }
+}
+
+pub struct PostRecordsReqBuilder {
+    field_key: String,
+
+    records: Vec<RecordMap>,
+}
+
+impl PostRecordsReqBuilder {
+    pub fn new() -> PostRecordsReqBuilder {
+        PostRecordsReqBuilder {
+            field_key: String::from("name"),
+            records: Vec::new(),
+        }
+    }
+
+    pub fn field_key(self, field_key: FieldID) -> PostRecordsReqBuilder {
+        let field_key_value;
+        match field_key {
+            FieldID::ID => field_key_value = "id".to_string(),
+            FieldID::NAME => field_key_value = "name".to_string(),
+        }
+        PostRecordsReqBuilder {
+            field_key: field_key_value,
+            ..self
+        }
+    }
+
+    pub fn records(self, records: Vec<RecordMap>) -> PostRecordsReqBuilder {
+        PostRecordsReqBuilder { records, ..self }
+    }
+
+    pub fn build(self) -> PostRecordsReq {
+        PostRecordsReq {
+            field_key: self.field_key,
+            records: self.records,
+        }
     }
 }
 
@@ -199,17 +251,22 @@ impl RecordMapBuilder {
         self
     }
 
-    pub fn put_string(mut self, field_key: String, field_value: String) -> RecordMapBuilder {
-        self.fields.insert(field_key, Value::String(field_value));
+    pub fn put_string(mut self, field_key: &String, field_value: String) -> RecordMapBuilder {
+        self.fields
+            .insert(field_key.clone(), Value::String(field_value));
         self
     }
 
-    pub fn put_strings(mut self, field_key: String, field_values: Vec<String>) -> RecordMapBuilder {
+    pub fn put_strings(
+        mut self,
+        field_key: &String,
+        field_values: Vec<String>,
+    ) -> RecordMapBuilder {
         let mut values: Vec<Value> = Vec::new();
         for field_value in field_values {
             values.push(Value::String(field_value));
         }
-        self.fields.insert(field_key, Value::Array(values));
+        self.fields.insert(field_key.clone(), Value::Array(values));
         self
     }
 
@@ -228,6 +285,16 @@ pub struct PostRecordsResp {
     pub records: Vec<Record>,
 }
 
+pub enum Sort {
+    ASC,
+    DESC,
+}
+
+pub enum FieldID {
+    ID,
+    NAME,
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -240,15 +307,15 @@ mod tests {
             .max_records(1)
             .page_num(1)
             .sort(vec![
-                Sort("1".to_string(), "asc".to_string()),
-                Sort("2".to_string(), "desc".to_string()),
+                ("1".to_string(), Sort::ASC),
+                ("2".to_string(), Sort::DESC),
             ])
             .record_ids(vec!["1".to_string(), "2".to_string()])
             .view_id("1".to_string())
             .fields(vec!["1".to_string(), "2".to_string()])
             .filter_by_formula("1".to_string())
             .cell_format("1".to_string())
-            .field_key("1".to_string())
+            .field_key(FieldID::ID)
             .build();
         println!("{:?}", get_records_req.to_parameter_vec())
     }
@@ -256,12 +323,12 @@ mod tests {
     #[test]
     fn post_records_req() {
         let record1 = RecordMap::builder()
-            .put_string("field_key1".to_string(), "field_value1".to_string())
-            .put_string("field_key2".to_string(), "field_value2".to_string())
+            .put_string(&"field_key1".to_string(), "field_value1".to_string())
+            .put_string(&"field_key2".to_string(), "field_value2".to_string())
             .build();
         let record2 = RecordMap::builder()
-            .put_string("field_key1".to_string(), "field_value1".to_string())
-            .put_string("field_key2".to_string(), "field_value2".to_string())
+            .put_string(&"field_key1".to_string(), "field_value1".to_string())
+            .put_string(&"field_key2".to_string(), "field_value2".to_string())
             .build();
         let req = PostRecordsReq {
             field_key: "name".to_string(),
@@ -278,13 +345,13 @@ mod tests {
     fn patch_records_req() {
         let record1 = RecordMap::builder()
             .record_id("rec1".to_string())
-            .put_string("field_key1".to_string(), "field_value1".to_string())
-            .put_string("field_key2".to_string(), "field_value2".to_string())
+            .put_string(&"field_key1".to_string(), "field_value1".to_string())
+            .put_string(&"field_key2".to_string(), "field_value2".to_string())
             .build();
         let record2 = RecordMap::builder()
             .record_id("rec1".to_string())
-            .put_string("field_key1".to_string(), "field_value1".to_string())
-            .put_string("field_key2".to_string(), "field_value2".to_string())
+            .put_string(&"field_key1".to_string(), "field_value1".to_string())
+            .put_string(&"field_key2".to_string(), "field_value2".to_string())
             .build();
         let req = PostRecordsReq {
             field_key: "name".to_string(),
