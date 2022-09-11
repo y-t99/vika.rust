@@ -13,7 +13,7 @@
 ```toml
 # Cargo.toml
 [dependencies]
-vika_community = "0.1.1"
+vika_community = "0.1.2"
 # or
 # vika_community = { git = "https://github.com/y-t99/vika.rust.git" }
 serde_json = "1.0"
