@@ -2,9 +2,9 @@
 
 #### 👋 Introduce
 
-🦀 rust for vikadata api. To use this crate, it's good for you to understand some vikadata's concept. for example, space, node, datasheet, view, field, record and soon. You can go [here](https://vika.cn/help/manual-1-what-is-vikadata/), it's vika office produce manual.
+🦀 rust for [vikadata api](https://vika.cn/developers/api/introduction). To use this crate, it's good for you to understand some vikadata's concept. for example, space, node, datasheet, view, field, record and soon. You can go [here](https://vika.cn/help/manual-1-what-is-vikadata/), it's vika office produce manual.
 
-[vikadata](https://github.com/vikadata) is a Commercial version of Open Source [APITable](https://github.com/apitable) which added full enterprise-ready features. Vikadata is the on-line visual database. **It means that we can save structured data to vikadata by [vikadata api](https://vika.cn/developers/api/introduction) , when we want to make some interesting and fun tools. Instead of using heavy database**
+[Vikadata](https://github.com/vikadata) is a Commercial version of Open Source [APITable](https://github.com/apitable) which added full enterprise-ready features. Vikadata is the on-line visual database. **It means that we can save structured data to vikadata by vikadata api, when we want to make some interesting and fun tools. Instead of using heavy database.**
 
 #### 🚀 Using
 
@@ -16,6 +16,7 @@
 vika_community = "0.1.1"
 # or
 # vika_community = { git = "https://github.com/y-t99/vika.rust.git" }
+serde_json = "1.0"
 ```
 
 🌠 Importing the crate, and create the `vika_client` by your vikadata's token.
@@ -50,7 +51,7 @@ let nodes: Vec<Node> = vika_client
         .unwrap();
 for node in nodes {
     println!(
-        "the node info[id: {}, name: {}, type: {}, icon: {}, isFav: {}]. \nthe node's children is: {:?}",
+        "the node info [id: {}, name: {}, type: {}, icon: {}, isFav: {}]. \nthe node's children is: {:?}",
         node.id, node.name, node.node_type, node.icon, node.is_fav, node.children
     );
 }
@@ -63,4 +64,57 @@ println!(
     "the node info: id: {}, name {}, type {}, icon {}, isFav {} \n. the node's children is: {:?}",
     node.id, node.name, node.node_type, node.icon, node.is_fav, node.children
 )
+```
+
+🌈 the datasheet's field manager.
+
+```rust
+use serde_json::Value;
+
+let space_id = "spcXxx".to_string();
+let datasheet_id = "dstXxx".to_string();
+let fields = vika_client
+    .spaces.space(&space_id)
+    .datasheets.datasheet(&datasheet_id)
+    .fields;
+// the new field info
+let field_post_req = PostFieldReq::builder()
+    .name("name".to_string())
+    .as_single_text_req()
+    .default_value("default_value".to_string())
+    .build();
+// the datasheet append the new field
+let new_field: PostFieldResp = fields.post(field_post_req).unwrap();
+// query the datasheet's all fields info
+let fields_value: Vec<Value> = fields.query_all().unwrap();
+for field_value in fields_value {
+   for field_value in fields_value {
+        println!(
+            "the field info [id: {}, name: {}, type: {}] \n the field's property: [{}].",
+            field_value["id"], field_value["name"], field_value["type"], field_value["property"]
+        );
+    }
+}
+// delete field by the field's id
+fields.field_id(&new_field.id).delete();
+```
+
+☄️ we can crete the datasheet.
+
+```rust
+let space_id = "spaceXxx".to_string();
+let datasheet = vika_client.spaces.space(&space_id).datasheets;
+let field_post_req = PostFieldReq::builder()
+    .name("field_name".to_string())
+    .as_single_text_req()
+    .default_value("default_value".to_string())
+    .build();
+let datasheet_post_req: PostDatasheetReq = PostDatasheetReq::builder()
+    .name("datasheet_name".to_string())
+    .description("description".to_string())
+    .folder_id("fodXxx".to_string())
+    .pre_node_id("dstXxx".to_string())
+    .fields(vec![field_post_req])
+    .build();
+let new_datasheet: PostDatasheetsResp = datasheet.post(datasheet_post_req).unwrap();
 ```

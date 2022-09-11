@@ -51,12 +51,37 @@ impl FieldsManager {
         }
     }
 
-    pub fn field_id(self, field_id: String) -> FieldManager {
+    pub fn field_id(self, field_id: &String) -> FieldManager {
         FieldManager {
             config: self.config.clone(),
             space_id: self.space_id.clone(),
             datasheet_id: self.datasheet_id.clone(),
-            field_id,
+            field_id: field_id.clone(),
+        }
+    }
+
+    pub fn post(&self, field: PostFieldReq) -> Option<PostFieldResp>{
+        let config: Config = self.config.clone();
+        let url = format!(
+            "{}://{}/fusion/{}/spaces/{}/datasheets/{}/fields",
+            &config.protocol, &config.host, &config.version, &self.space_id, &self.datasheet_id
+        );
+        let client = Client::new();
+        let body = client
+            .post(url)
+            .header(AUTHORIZATION, config.token.clone())
+            .header(CONTENT_TYPE, String::from("application/json"))
+            .body(field.to_json_string())
+            .send()
+            .unwrap()
+            .text()
+            .unwrap();
+            println!("{}", body);
+        let resp: Response<PostFieldResp> = serde_json::from_str(&body).unwrap();
+        if resp.code == 200 {
+            Some(resp.data)
+        } else {
+            None
         }
     }
 }
@@ -72,29 +97,6 @@ pub struct FieldManager {
 }
 
 impl FieldManager {
-    pub fn post(&self, field: PostFieldReq) -> Option<PostFieldResp>{
-        let config: Config = self.config.clone();
-        let url = format!(
-            "{}://{}/fusion/{}/spaces/{}/datasheets/{}/fields",
-            config.protocol, config.host, config.version, &self.space_id, &self.datasheet_id
-        );
-        let client = Client::new();
-        let body = client
-            .post(url)
-            .header(AUTHORIZATION, config.token.clone())
-            .header(CONTENT_TYPE, String::from("application/json"))
-            .body(field.to_json_string())
-            .send()
-            .unwrap()
-            .text()
-            .unwrap();
-        let resp: Response<PostFieldResp> = serde_json::from_str(&body).unwrap();
-        if resp.code == 200 {
-            Some(resp.data)
-        } else {
-            None
-        }
-    }
 
     pub fn delete(&self) -> bool {
         let config: Config = self.config.clone();

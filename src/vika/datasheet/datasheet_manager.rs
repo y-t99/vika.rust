@@ -34,7 +34,7 @@ impl DatasheetsManager {
         }
     }
 
-    pub fn datasheet(&self, datasheet_id: String) -> DatasheetManager {
+    pub fn datasheet(&self, datasheet_id: &String) -> DatasheetManager {
         DatasheetManager {
             config: self.config.clone(),
             space_id: self.space_id.clone(),
