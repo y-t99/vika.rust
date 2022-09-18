@@ -88,12 +88,10 @@ let new_field: PostFieldResp = fields.post(field_post_req).unwrap();
 // query the datasheet's all fields info
 let fields_value: Vec<Value> = fields.query_all().unwrap();
 for field_value in fields_value {
-   for field_value in fields_value {
-        println!(
-            "the field info [id: {}, name: {}, type: {}] \n the field's property: [{}].",
-            field_value["id"], field_value["name"], field_value["type"], field_value["property"]
-        );
-    }
+    println!(
+        "the field info [id: {}, name: {}, type: {}] \n the field's property: [{}].",
+        field_value["id"], field_value["name"], field_value["type"], field_value["property"]
+    );
 }
 // delete field by the field's id
 fields.field_id(&new_field.id).delete();
